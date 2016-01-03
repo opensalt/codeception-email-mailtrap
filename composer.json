@@ -1,6 +1,6 @@
 {
-    "name": "ericmartel/codeception-email-mailhog",
-    "description": "Provides test helpers for Codeception when testing email functionality with MailHog",
+    "name": "ericmartel/codeception-email-mailtrap",
+    "description": "Provides test helpers for Codeception when testing email functionality with Mailtrap",
     "license": "MIT",
     "authors": [
         {
@@ -9,7 +9,7 @@
         }
     ],
     "require": {
-        "ericmartel/codeception-email": "dev-master",
+        "ericmartel/codeception-email": "^1.0",
         "guzzlehttp/guzzle": "^6.1"
     },
     "autoload": {
