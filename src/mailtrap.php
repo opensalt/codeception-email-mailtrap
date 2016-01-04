@@ -69,7 +69,7 @@ class Mailtrap extends Module
 
   public function _initialize()
   {
-    $url = "https://mailtrap.io/"
+    $url = "https://mailtrap.io/";
 
     $this->mailtrap = new \GuzzleHttp\Client(['base_uri' => $url, 'timeout' => 1.0]);
 
@@ -138,6 +138,20 @@ class Mailtrap extends Module
     $this->setCurrentInbox($this->fetchedEmails);
   }
 
+  /**
+   * Get Headers
+   * 
+   * Fetch the header for a given email and return it
+   * 
+   * @param string $id Email identifier
+   * @return mixed Header content
+   */
+  protected function getHeaders($id)
+  {
+    $response = $this->sendRequest('GET', "/api/v1/inboxes/{$this->config['inbox_id']}/messages/{$id}/mail_headers");
+    return json_decode($response->getBody());
+  }
+
   /** 
    * Access Inbox For
    * 
@@ -149,16 +163,17 @@ class Mailtrap extends Module
   {
     $inbox = array();
     $addressPlusDelimiters = '<' . $address . '>';
-    foreach($this->fetchedEmails as $email)
+    foreach($this->fetchedEmails as &$email)
     {
-      if(!isset($email->Content->Headers->Bcc))
+      $email->Headers = $this->getHeaders($email->id)->headers;
+      if(!isset($email->Headers->bcc))
       {
-        if(strpos($email->Content->Headers->To[0], $addressPlusDelimiters) || array_search($email->Content->Headers->Cc[0], $addressPlusDelimiters))
+        if(strpos($email->Headers->to, $addressPlusDelimiters) || strpos($email->Headers->cc, $addressPlusDelimiters))
         {
           array_push($inbox, $email);
         }
       }
-      else if(strpos($email->Content->Headers->Bcc[0], $addressPlusDelimiters))
+      else if(strpos($email->Headers->bcc, $addressPlusDelimiters))
       {
         array_push($inbox, $email);
       }
@@ -209,7 +224,9 @@ class Mailtrap extends Module
     }
 
     $email = array_shift($this->unreadInbox);
-    return $this->getFullEmail($email->ID);
+    $content = $this->getFullEmail($email->id);
+    $content->Headers = $this->getHeaders($email->id)->headers;
+    return $content;
   }
 
   /**
@@ -244,7 +261,7 @@ class Mailtrap extends Module
    */
   protected function getEmailSubject($email)
   {
-    return $email->Content->Headers->Subject[0];
+    return $email->subject;
   }
 
   /**
@@ -257,7 +274,10 @@ class Mailtrap extends Module
    */
   protected function getEmailBody($email)
   {
-    return $email->Content->Body;
+    if(strlen($email->html_body) > 0)
+      return $email->html_body;
+
+    return $email->text_body;
   }
 
   /**
@@ -270,7 +290,7 @@ class Mailtrap extends Module
    */
   protected function getEmailTo($email)
   {
-    return $email->Content->Headers->To[0];
+    return $email->Headers->to;
   }
 
   /**
@@ -283,7 +303,7 @@ class Mailtrap extends Module
    */
   protected function getEmailCC($email)
   {
-    return $email->Content->Headers->Cc[0];
+    return $email->Headers->cc;
   }
 
   /**
@@ -296,9 +316,9 @@ class Mailtrap extends Module
    */
   protected function getEmailBCC($email)
   {
-    if(isset($email->Content->Headers->Bcc))
+    if($email->Headers->bcc != NULL)
     {
-      return $email->Content->Headers->Bcc[0];
+      return $email->Headers->bcc;
     }
     return "";
   }
@@ -313,11 +333,11 @@ class Mailtrap extends Module
    */
   protected function getEmailRecipients($email)
   {
-    $recipients = $email->Content->Headers->To[0] . ' ' .
-                  $email->Content->Headers->Cc[0];
-    if(isset($email->Content->Headers->Bcc))
+    $recipients = $email->Headers->to . ' ' .
+                  $email->Headers->cc;
+    if($email->Headers->bcc != NULL)
     {
-      $recipients .= ' ' . $email->Content->Headers->Bcc[0];  
+      $recipients .= ' ' . $email->Headers->bcc;  
     }
 
     return $recipients;
@@ -333,7 +353,7 @@ class Mailtrap extends Module
    */
   protected function getEmailSender($email)
   {
-    return $email->Content->Headers->From[0];
+    return $email->Headers->from;
   }
 
   /**
@@ -346,7 +366,7 @@ class Mailtrap extends Module
    */
   protected function getEmailReplyTo($email)
   {
-    return $email->Content->Headers->{'Reply-To'}[0];
+    return $email->Headers->reply_to;
   }
 
   /**
@@ -359,7 +379,30 @@ class Mailtrap extends Module
    */
   protected function getEmailPriority($email)
   {
-    return $email->Content->Headers->{'X-Priority'}[0];
+    $response = $this->sendRequest('GET', "/api/v1/inboxes/{$this->config['inbox_id']}/messages/{$email->id}/body.raw");
+    return $this->textAfterString($response->getBody(), 'X-Priority: ');
+  }
+
+  /**
+   * Text After String
+   * 
+   * Returns the text after the given string, if found
+   * 
+   * @param string $haystack
+   * @param string $needle
+   * @return string Found string
+   */
+  protected function textAfterString($haystack, $needle)
+  {
+    $result = "";
+    $needleLength = strlen($needle);
+
+    if($needleLength > 0 && preg_match("#$needle([^\r\n]+)#i", $haystack, $match))
+    {
+      $result = trim(substr($match[0], -(strlen($match[0]) - $needleLength)));
+    }
+
+    return $result;
   }
 
   /**
@@ -422,8 +465,8 @@ class Mailtrap extends Module
    */
   static function sortEmailsByCreationDatePredicate($emailA, $emailB) 
   {
-    $sortKeyA = $emailA->Content->Headers->Date;
-    $sortKeyB = $emailB->Content->Headers->Date;
+    $sortKeyA = $emailA->sent_at;
+    $sortKeyB = $emailB->sent_at;
     return ($sortKeyA > $sortKeyB) ? -1 : 1;
   }
 }
