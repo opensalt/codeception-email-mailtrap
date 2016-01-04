@@ -20,6 +20,8 @@ modules:
             api_token: 'your token'
             inbox_id: 'the inbox id you're using'
 ```
+The `api_token` can be found by visiting your Mailtrap's [API Page][MailtrapAPI].  Clicking on one of your mailboxes will give you it's id in the URL, for example, `https://mailtrap.io/inboxes/12345/settings` would mean that the `inbox_id` is `12345`.
+
 Additional parameters can be fed directly to the Guzzle connection using the `guzzleRequestOptions` variable.
 
 The variable `deleteEmailsAfterScenario` can be set to true to ensure that all emails are deleted at the end of each scenario, but it is turned off by default.
@@ -100,6 +102,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
    [Mailtrap]: http://mailtrap.io
+   [MailtrapAPI]: https://mailtrap.io/public_api
    [CodeceptionEmailTestingFramework]: https://github.com/ericmartel/codeception-email
    
 
