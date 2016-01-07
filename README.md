@@ -30,11 +30,11 @@ This Module adds a few public methods for the user, such as:
 ```
 deleteAllEmails()
 ```
-Deletes all emails in MailHog
+Deletes all emails in Mailtrap
 ```
 fetchEmails()
 ```
-Fetches all email headers from MailHog, sorts them by timestamp and assigns them to the current and unread inboxes
+Fetches all email headers from Mailtrap, sorts them by timestamp and assigns them to the current and unread inboxes
 ```
 accessInboxFor($address)
 ```
@@ -52,13 +52,13 @@ $I = new FunctionalTester($scenario);
 $I->am('a member');
 $I->wantTo('request a reset password link');
 
-// First, remove all existing emails in the MailHog inbox
+// First, remove all existing emails in the Mailtrap inbox
 $I->deleteAllEmails();
 
 // Implementation is up to the user, use this as an example
 $I->requestAPasswordResetLink();
 
-// Query MailHog and fetch all available emails
+// Query Mailtrap and fetch all available emails
 $I->fetchEmails();
 
 // This is optional, but will filter the emails in case you're sending multiple emails or use the BCC field
