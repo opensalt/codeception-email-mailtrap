@@ -71,13 +71,14 @@ class Mailtrap extends Module
   {
     $url = "https://mailtrap.io/";
 
-    $this->mailtrap = new \GuzzleHttp\Client(['base_uri' => $url, 'timeout' => 1.0]);
-
+    $overrideOptions = [];
     if (isset($this->config['guzzleRequestOptions'])) {
-        foreach ($this->config['guzzleRequestOptions'] as $option => $value) {
-            $this->mailtrap->setDefaultOption($option, $value);
-        }
+      foreach ($this->config['guzzleRequestOptions'] as $option => $value) {
+        $overrideOptions[$option] = $value;
+      }
     }
+
+    $this->mailtrap = new \GuzzleHttp\Client(array_merge(['base_uri' => $url, 'timeout' => 1.0], $overrideOptions));
   }
 
   /** 
