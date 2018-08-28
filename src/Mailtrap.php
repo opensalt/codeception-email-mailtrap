@@ -317,7 +317,7 @@ class Mailtrap extends Module
    */
   protected function getEmailBCC($email)
   {
-    if($email->Headers->bcc != NULL)
+    if(isset($email->Headers->bcc) && $email->Headers->bcc != NULL)
     {
       return $email->Headers->bcc;
     }
@@ -336,7 +336,7 @@ class Mailtrap extends Module
   {
     $recipients = $email->Headers->to . ' ' .
                   $email->Headers->cc;
-    if($email->Headers->bcc != NULL)
+    if(isset($email->Headers->bcc) && $email->Headers->bcc != NULL)
     {
       $recipients .= ' ' . $email->Headers->bcc;  
     }
