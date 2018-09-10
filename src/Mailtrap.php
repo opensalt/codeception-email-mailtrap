@@ -275,10 +275,30 @@ class Mailtrap extends Module
    */
   protected function getEmailBody($email)
   {
-    if(strlen($email->html_body) > 0)
-      return $email->html_body;
+    try{
+      if(!isset($email->htmlBody))
+      {
+          $response = $this->sendRequest('GET', $email->html_source_path);
+          $email->htmlBody = $response->getBody()->getContents();
+      }
 
-    return $email->text_body;
+      if(isset($email->htmlBody) && strlen($email->htmlBody) > 0)
+      {
+        return $email->htmlBody;
+      }
+      
+      if(!isset($email->textBody))
+      {
+        $response = $this->sendRequest('GET', $email->txt_path);
+        $email->textBody = $response->getBody()->getContents();
+      }
+    }
+    catch(Exception $e)
+    {
+      $this->fail('Exception: ' . $e->getMessage());
+    }
+
+    return $email->textBody;
   }
 
   /**
