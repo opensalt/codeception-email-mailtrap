@@ -11,6 +11,7 @@
 namespace Codeception\Module;
 
 use Codeception\Module;
+use GuzzleHttp\Exception\ClientException;
 
 class Mailtrap extends Module
 {
@@ -278,8 +279,10 @@ class Mailtrap extends Module
     try{
       if(!isset($email->htmlBody))
       {
+          try {
           $response = $this->sendRequest('GET', $email->html_source_path);
           $email->htmlBody = $response->getBody()->getContents();
+          } catch(ClientException $exc){ }          
       }
 
       if(isset($email->htmlBody) && strlen($email->htmlBody) > 0)
