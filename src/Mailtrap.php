@@ -164,18 +164,18 @@ class Mailtrap extends Module
   public function accessInboxFor($address)
   {
     $inbox = array();
-    $addressPlusDelimiters = '<' . $address . '>';
+    $addressPlusDelimiters = $address;
     foreach($this->fetchedEmails as &$email)
     {
       $email->Headers = $this->getHeaders($email->id)->headers;
       if(!isset($email->Headers->bcc))
       {
-        if(strpos($email->Headers->to, $addressPlusDelimiters) || strpos($email->Headers->cc, $addressPlusDelimiters))
+        if(strpos($email->Headers->to, $addressPlusDelimiters) !== false || strpos($email->Headers->cc, $addressPlusDelimiters) !== false)
         {
           array_push($inbox, $email);
         }
       }
-      else if(strpos($email->Headers->bcc, $addressPlusDelimiters))
+      else if(strpos($email->Headers->bcc, $addressPlusDelimiters) !== false)
       {
         array_push($inbox, $email);
       }
@@ -280,8 +280,8 @@ class Mailtrap extends Module
       if(!isset($email->htmlBody))
       {
           try {
-          $response = $this->sendRequest('GET', $email->html_source_path);
-          $email->htmlBody = $response->getBody()->getContents();
+            $response = $this->sendRequest('GET', $email->html_source_path);
+            $email->htmlBody = $response->getBody()->getContents();
           } catch(ClientException $exc){ }          
       }
 
