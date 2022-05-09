@@ -59,14 +59,14 @@ class Mailtrap extends Module
    *
    * @var array
    */
-  protected $config = array('api_token', 'inbox_id', 'guzzleRequestOptions', 'deleteEmailsAfterScenario');
+  protected array $config = array('api_token', 'inbox_id', 'guzzleRequestOptions', 'deleteEmailsAfterScenario');
 
   /**
    * Codeception required variables
    *
    * @var array
    */
-  protected $requiredFields = array('api_token', 'inbox_id');
+  protected array $requiredFields = array('api_token', 'inbox_id');
 
   public function _initialize()
   {
