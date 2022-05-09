@@ -85,7 +85,7 @@ class Mailtrap extends Module
   /** 
    * Method executed after each scenario
    */
-  public function _after(\Codeception\TestCase $test)
+  public function _after(\Codeception\TestInterface $test)
   {
     if(isset($this->config['deleteEmailsAfterScenario']) && $this->config['deleteEmailsAfterScenario'])
     {
